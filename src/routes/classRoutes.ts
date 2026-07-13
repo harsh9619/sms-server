@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as classController from "../controllers/classController.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.get("/", classController.getClasses);
 router.post("/", classController.createClass);

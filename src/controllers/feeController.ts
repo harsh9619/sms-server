@@ -4,7 +4,7 @@ import * as feeService from "../services/feeService.js";
 
 export async function getFees(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
 
     const fees = await feeService.getFees(schoolId);
@@ -16,7 +16,7 @@ export async function getFees(req: Request, res: Response) {
 
 export async function createFee(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { studentId, amount, feeType, dueDate, paidDate, status, remarks } = req.body;
 

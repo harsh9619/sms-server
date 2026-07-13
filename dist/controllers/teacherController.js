@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as teacherService from "../services/teacherService.js";
 export async function getTeachers(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const teachers = await teacherService.getTeachers(schoolId);
         res.json(teachers);

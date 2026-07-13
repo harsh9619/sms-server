@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as userService from "../services/userService.js";
 export async function getUsers(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const showAll = req.query.all === "true";
         const users = await userService.getUsers(schoolId, showAll);
@@ -14,7 +14,7 @@ export async function getUsers(req, res) {
 }
 export async function createUser(req, res) {
     try {
-        const { name, email, phone, role, schoolId } = req.body;
+        const { name, email, phone, role } = req.body;
         if (!name || !email || !role) {
             return res.status(400).json({ error: "Name, email, and role are required." });
         }
@@ -25,7 +25,8 @@ export async function createUser(req, res) {
                 : role === "student"
                     ? "student"
                     : "teacher";
-        const schoolInt = schoolId ? toIntID(String(schoolId)) : null;
+        const schoolIdStr = req.params.schoolId || req.body.schoolId;
+        const schoolInt = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         if (dbRole !== "super_admin" && !schoolInt) {
             return res.status(400).json({ error: "School assignment is required for this role." });
         }
@@ -53,7 +54,7 @@ export async function updateUser(req, res) {
         if (!existing) {
             return res.status(404).json({ error: "User not found" });
         }
-        const { name, email, phone, role, schoolId } = req.body;
+        const { name, email, phone, role } = req.body;
         if (!name || !email || !role) {
             return res.status(400).json({ error: "Name, email, and role are required." });
         }
@@ -64,7 +65,8 @@ export async function updateUser(req, res) {
                 : role === "student"
                     ? "student"
                     : "teacher";
-        const schoolInt = schoolId ? toIntID(String(schoolId)) : null;
+        const schoolIdStr = req.params.schoolId || req.body.schoolId;
+        const schoolInt = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         if (dbRole !== "super_admin" && !schoolInt) {
             return res.status(400).json({ error: "School assignment is required for this role." });
         }

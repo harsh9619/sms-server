@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as feeService from "../services/feeService.js";
 export async function getFees(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const fees = await feeService.getFees(schoolId);
         res.json(fees);
@@ -13,7 +13,7 @@ export async function getFees(req, res) {
 }
 export async function createFee(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = toIntID(String(schoolIdStr));
         const { studentId, amount, feeType, dueDate, paidDate, status, remarks } = req.body;
         const dbStudentId = toIntID(String(studentId));

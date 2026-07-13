@@ -4,7 +4,7 @@ import * as homeworkService from "../services/homeworkService.js";
 
 export async function getHomework(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     const classIdStr = req.query.classId;
     const classId = classIdStr ? toIntID(String(classIdStr)) : null;
@@ -20,7 +20,7 @@ export async function getHomework(req: Request, res: Response) {
 
 export async function createHomework(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { classId, subjectId, teacherId, title, description, dueDate } = req.body;
 

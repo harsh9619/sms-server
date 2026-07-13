@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as salaryService from "../services/salaryService.js";
 export async function getSalaries(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const salaries = await salaryService.getSalaries(schoolId);
         res.json(salaries);
@@ -13,7 +13,7 @@ export async function getSalaries(req, res) {
 }
 export async function createSalary(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = toIntID(String(schoolIdStr));
         const { teacherId, baseSalary, allowances, deductions, month, year, status, paidDate } = req.body;
         const dbTeacherId = toIntID(String(teacherId));

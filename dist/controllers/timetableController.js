@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as timetableService from "../services/timetableService.js";
 export async function getTimetables(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const classIdStr = req.query.classId;
         const classId = classIdStr ? toIntID(String(classIdStr)) : null;
@@ -17,7 +17,7 @@ export async function getTimetables(req, res) {
 }
 export async function createTimetable(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = toIntID(String(schoolIdStr));
         const { classId, subjectId, dayOfWeek, startTime, endTime, classroom } = req.body;
         const timetable = await timetableService.createTimetable(schoolId, {

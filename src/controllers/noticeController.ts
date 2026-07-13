@@ -4,7 +4,7 @@ import * as noticeService from "../services/noticeService.js";
 
 export async function getNotices(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     const audience = req.query.audience ? String(req.query.audience) : null;
 
@@ -17,7 +17,7 @@ export async function getNotices(req: Request, res: Response) {
 
 export async function createNotice(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { title, content, audience, isPinned, createdBy } = req.body;
 

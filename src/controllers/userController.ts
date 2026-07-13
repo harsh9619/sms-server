@@ -4,7 +4,7 @@ import * as userService from "../services/userService.js";
 
 export async function getUsers(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     const showAll = req.query.all === "true";
 
@@ -17,7 +17,7 @@ export async function getUsers(req: Request, res: Response) {
 
 export async function createUser(req: Request, res: Response) {
   try {
-    const { name, email, phone, role, schoolId } = req.body;
+    const { name, email, phone, role } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "Name, email, and role are required." });
     }
@@ -31,7 +31,8 @@ export async function createUser(req: Request, res: Response) {
         ? "student"
         : "teacher";
 
-    const schoolInt = schoolId ? toIntID(String(schoolId)) : null;
+    const schoolIdStr = req.params.schoolId || req.body.schoolId;
+    const schoolInt = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     if (dbRole !== "super_admin" && !schoolInt) {
       return res.status(400).json({ error: "School assignment is required for this role." });
     }
@@ -62,7 +63,7 @@ export async function updateUser(req: Request, res: Response) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { name, email, phone, role, schoolId } = req.body;
+    const { name, email, phone, role } = req.body;
     if (!name || !email || !role) {
       return res.status(400).json({ error: "Name, email, and role are required." });
     }
@@ -76,7 +77,8 @@ export async function updateUser(req: Request, res: Response) {
         ? "student"
         : "teacher";
 
-    const schoolInt = schoolId ? toIntID(String(schoolId)) : null;
+    const schoolIdStr = req.params.schoolId || req.body.schoolId;
+    const schoolInt = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     if (dbRole !== "super_admin" && !schoolInt) {
       return res.status(400).json({ error: "School assignment is required for this role." });
     }

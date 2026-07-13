@@ -4,7 +4,7 @@ import * as salaryService from "../services/salaryService.js";
 
 export async function getSalaries(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
 
     const salaries = await salaryService.getSalaries(schoolId);
@@ -16,7 +16,7 @@ export async function getSalaries(req: Request, res: Response) {
 
 export async function createSalary(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { teacherId, baseSalary, allowances, deductions, month, year, status, paidDate } = req.body;
 

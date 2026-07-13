@@ -4,7 +4,7 @@ import * as classService from "../services/classService.js";
 
 export async function getClasses(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
 
     const classes = await classService.getClasses(schoolId);
@@ -16,7 +16,7 @@ export async function getClasses(req: Request, res: Response) {
 
 export async function createClass(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { name, section, teacherId, subjects } = req.body;
 

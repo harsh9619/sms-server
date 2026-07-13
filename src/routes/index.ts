@@ -15,19 +15,26 @@ import markRoutes from "./markRoutes.js";
 
 const router = Router();
 
-// Mount routes
+// Mount general/un-scoped routes directly
 router.use("/", schoolRoutes);
-router.use("/api/students", studentRoutes);
-router.use("/api/teachers", teacherRoutes);
-router.use("/api/classes", classRoutes);
-router.use("/api/subjects", subjectRoutes);
-router.use("/api/attendance", attendanceRoutes);
-router.use("/api/users", userRoutes);
-router.use("/api/fees", feeRoutes);
-router.use("/api/salaries", salaryRoutes);
-router.use("/api/timetables", timetableRoutes);
-router.use("/api/homework", homeworkRoutes);
-router.use("/api/notices", noticeRoutes);
-router.use("/api/marks", markRoutes);
+
+// Create sub-router for school-scoped endpoints that merges URL params
+const schoolScopedRouter = Router({ mergeParams: true });
+
+schoolScopedRouter.use("/students", studentRoutes);
+schoolScopedRouter.use("/teachers", teacherRoutes);
+schoolScopedRouter.use("/classes", classRoutes);
+schoolScopedRouter.use("/subjects", subjectRoutes);
+schoolScopedRouter.use("/attendance", attendanceRoutes);
+schoolScopedRouter.use("/users", userRoutes);
+schoolScopedRouter.use("/fees", feeRoutes);
+schoolScopedRouter.use("/salaries", salaryRoutes);
+schoolScopedRouter.use("/timetables", timetableRoutes);
+schoolScopedRouter.use("/homework", homeworkRoutes);
+schoolScopedRouter.use("/notices", noticeRoutes);
+schoolScopedRouter.use("/marks", markRoutes);
+
+// Mount the school-scoped router under '/api/:schoolId'
+router.use("/api/:schoolId", schoolScopedRouter);
 
 export default router;

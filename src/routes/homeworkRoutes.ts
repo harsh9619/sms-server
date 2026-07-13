@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as homeworkController from "../controllers/homeworkController.js";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.get("/", homeworkController.getHomework);
 router.post("/", homeworkController.createHomework);

@@ -4,7 +4,7 @@ import * as studentService from "../services/studentService.js";
 
 export async function getStudents(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
 
     const students = await studentService.getStudents(schoolId);
@@ -16,7 +16,7 @@ export async function getStudents(req: Request, res: Response) {
 
 export async function createStudent(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
 
     const {

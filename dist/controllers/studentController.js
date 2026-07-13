@@ -2,7 +2,7 @@ import { toIntID } from "../db/index.js";
 import * as studentService from "../services/studentService.js";
 export async function getStudents(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
         const students = await studentService.getStudents(schoolId);
         res.json(students);
@@ -13,7 +13,7 @@ export async function getStudents(req, res) {
 }
 export async function createStudent(req, res) {
     try {
-        const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+        const schoolIdStr = req.params.schoolId;
         const schoolId = toIntID(String(schoolIdStr));
         const { name, email, phone, class: className, section, rollNumber, parentName, parentPhone, address, dateOfBirth, gender, bloodGroup } = req.body;
         if (!name || !email || !rollNumber || !className || !section) {

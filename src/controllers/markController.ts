@@ -4,7 +4,7 @@ import * as markService from "../services/markService.js";
 
 export async function getMarks(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
     const studentIdStr = req.query.studentId;
     const studentId = studentIdStr ? toIntID(String(studentIdStr)) : null;
@@ -22,7 +22,7 @@ export async function getMarks(req: Request, res: Response) {
 
 export async function createOrUpdateMark(req: Request, res: Response) {
   try {
-    const schoolIdStr = req.headers["x-school-id"] || req.query.schoolId || req.body.schoolId;
+    const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
     const { studentId, subjectId, examType, score, maxScore, examDate, enteredBy } = req.body;
 
