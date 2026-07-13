@@ -1,0 +1,68 @@
+import { query } from "../db/index.js";
+import * as queries from "../queries/classQueries.js";
+export async function getClasses(schoolId) {
+    const result = await query(queries.GET_CLASSES, [schoolId]);
+    return result.rows;
+}
+export async function getClassById(classId) {
+    const result = await query(queries.GET_CLASS_BY_ID, [classId]);
+    return result.rows[0] || null;
+}
+export async function getFullClassRecord(classId) {
+    const result = await query(queries.GET_FULL_CLASS_RECORD, [classId]);
+    return result.rows[0] || null;
+}
+export async function createClass(schoolId, data) {
+    const { name, section, teacherId, subjects } = data;
+    const dbTeacherId = teacherId ? teacherId : null;
+    await query("BEGIN");
+    try {
+        const classResult = await query(queries.CREATE_CLASS, [schoolId, name, section, dbTeacherId]);
+        const newClass = classResult.rows[0];
+        if (subjects && Array.isArray(subjects)) {
+            for (const sub of subjects) {
+                const cleanSub = String(sub).trim();
+                if (!cleanSub)
+                    continue;
+                await query(queries.CREATE_SUBJECT, [schoolId, cleanSub, cleanSub.toUpperCase(), newClass.id, dbTeacherId]);
+            }
+        }
+        await query("COMMIT");
+        return newClass.id;
+    }
+    catch (err) {
+        await query("ROLLBACK").catch(() => { });
+        throw err;
+    }
+}
+export async function updateClass(classId, schoolId, data) {
+    const { name, section, teacherId, subjects } = data;
+    const dbTeacherId = teacherId ? teacherId : null;
+    await query("BEGIN");
+    try {
+        await query(queries.UPDATE_CLASS, [name, section, dbTeacherId, classId]);
+        if (subjects && Array.isArray(subjects)) {
+            const cleanSubjects = subjects.map((s) => String(s).trim()).filter(Boolean);
+            const existingSubjectsRes = await query(queries.GET_SUBJECTS_FOR_CLASS, [classId]);
+            const existingSubjects = existingSubjectsRes.rows;
+            const existingNames = existingSubjects.map(s => s.name);
+            const toDelete = existingSubjects.filter(s => !cleanSubjects.includes(s.name));
+            for (const sub of toDelete) {
+                await query(queries.DELETE_SUBJECT, [sub.id]);
+            }
+            const toAdd = cleanSubjects.filter(name => !existingNames.includes(name));
+            for (const sub of toAdd) {
+                await query(queries.CREATE_SUBJECT, [schoolId, sub, sub.toUpperCase(), classId, dbTeacherId]);
+            }
+            await query(queries.UPDATE_SUBJECTS_TEACHER, [dbTeacherId, classId]);
+        }
+        await query("COMMIT");
+    }
+    catch (err) {
+        await query("ROLLBACK").catch(() => { });
+        throw err;
+    }
+}
+export async function deleteClass(classId) {
+    await query(queries.DELETE_CLASS, [classId]);
+}
