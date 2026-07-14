@@ -13,7 +13,7 @@ export const GET_USERS_BY_SCHOOL = `
     u.created_at::text AS "joinDate",
     CASE WHEN u.school_id IS NULL THEN ARRAY[]::text[] ELSE ARRAY[u.school_id::text] END AS "schoolIds"
   FROM users u
-  WHERE u.school_id = $1 OR u.school_id IS NULL
+  WHERE u.role != 'student' AND (u.school_id = $1 OR u.school_id IS NULL)
 `;
 
 export const GET_ALL_USERS = `
@@ -31,10 +31,26 @@ export const GET_ALL_USERS = `
     u.created_at::text AS "joinDate",
     CASE WHEN u.school_id IS NULL THEN ARRAY[]::text[] ELSE ARRAY[u.school_id::text] END AS "schoolIds"
   FROM users u
+  WHERE u.role != 'student'
 `;
 
 export const GET_USER_BY_ID = `
   SELECT * FROM users WHERE id = $1
+`;
+
+export const GET_USER_BY_EMAIL = `
+  SELECT
+    id,
+    school_id,
+    name,
+    email,
+    password,
+    role,
+    phone,
+    avatar_url,
+    is_active
+  FROM users
+  WHERE email = $1
 `;
 
 export const GET_FULL_USER_RECORD = `

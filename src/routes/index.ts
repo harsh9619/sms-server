@@ -12,11 +12,13 @@ import timetableRoutes from "./timetableRoutes.js";
 import homeworkRoutes from "./homeworkRoutes.js";
 import noticeRoutes from "./noticeRoutes.js";
 import markRoutes from "./markRoutes.js";
+import authRoutes from "./authRoutes.js";
 
 const router = Router();
 
 // Mount general/un-scoped routes directly
 router.use("/", schoolRoutes);
+router.use("/auth", authRoutes);
 
 // Create sub-router for school-scoped endpoints that merges URL params
 const schoolScopedRouter = Router({ mergeParams: true });
