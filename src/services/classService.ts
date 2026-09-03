@@ -1,8 +1,8 @@
 import { query } from "../db/index.js";
 import * as queries from "../queries/classQueries.js";
 
-export async function getClasses(schoolId: number | null) {
-  const result = await query(queries.GET_CLASSES, [schoolId]);
+export async function getClasses(schoolId: number | null, academicYear?: string | null) {
+  const result = await query(queries.GET_CLASSES, [schoolId, academicYear || null]);
   return result.rows;
 }
 
@@ -17,12 +17,13 @@ export async function getFullClassRecord(classId: number) {
 }
 
 export async function createClass(schoolId: number, data: any) {
-  const { name, section, teacherId, subjects } = data;
+  const { name, section, teacherId, subjects, academicYear } = data;
   const dbTeacherId = teacherId ? teacherId : null;
+  const dbAcademicYear = academicYear || '2024-25';
 
   await query("BEGIN");
   try {
-    const classResult = await query(queries.CREATE_CLASS, [schoolId, name, section, dbTeacherId]);
+    const classResult = await query(queries.CREATE_CLASS, [schoolId, name, section, dbTeacherId, dbAcademicYear]);
     const newClass = classResult.rows[0];
 
     if (subjects && Array.isArray(subjects)) {
@@ -42,12 +43,12 @@ export async function createClass(schoolId: number, data: any) {
 }
 
 export async function updateClass(classId: number, schoolId: number, data: any) {
-  const { name, section, teacherId, subjects } = data;
+  const { name, section, teacherId, subjects, academicYear } = data;
   const dbTeacherId = teacherId ? teacherId : null;
 
   await query("BEGIN");
   try {
-    await query(queries.UPDATE_CLASS, [name, section, dbTeacherId, classId]);
+    await query(queries.UPDATE_CLASS, [name, section, dbTeacherId, academicYear || null, classId]);
 
     if (subjects && Array.isArray(subjects)) {
       const cleanSubjects = subjects.map((s: any) => String(s).trim()).filter(Boolean);

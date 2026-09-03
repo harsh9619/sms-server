@@ -6,8 +6,9 @@ export async function getClasses(req: Request, res: Response) {
   try {
     const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
+    const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
 
-    const classes = await classService.getClasses(schoolId);
+    const classes = await classService.getClasses(schoolId, academicYear);
     res.json(classes);
   } catch (err) {
     res.status(500).json({ error: String(err) });
@@ -18,7 +19,7 @@ export async function createClass(req: Request, res: Response) {
   try {
     const schoolIdStr = req.params.schoolId;
     const schoolId = toIntID(String(schoolIdStr));
-    const { name, section, teacherId, subjects } = req.body;
+    const { name, section, teacherId, subjects, academicYear } = req.body;
 
     if (!name || !section) {
       return res.status(400).json({ error: "Class name and section are required." });
@@ -30,7 +31,8 @@ export async function createClass(req: Request, res: Response) {
       name,
       section,
       teacherId: dbTeacherId,
-      subjects
+      subjects,
+      academicYear: academicYear || null,
     });
 
     const fullRecord = await classService.getFullClassRecord(newClassId);
@@ -52,7 +54,7 @@ export async function updateClass(req: Request, res: Response) {
     }
     const schoolId = toIntID(existing.schoolId);
 
-    const { name, section, teacherId, subjects } = req.body;
+    const { name, section, teacherId, subjects, academicYear } = req.body;
     if (!name || !section) {
       return res.status(400).json({ error: "Class name and section are required." });
     }
@@ -63,7 +65,8 @@ export async function updateClass(req: Request, res: Response) {
       name,
       section,
       teacherId: dbTeacherId,
-      subjects
+      subjects,
+      academicYear: academicYear || null,
     });
 
     const fullRecord = await classService.getFullClassRecord(classId);

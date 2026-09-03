@@ -23,8 +23,8 @@ export const GET_HOMEWORK = `
   ORDER BY h.due_date ASC
 `;
 export const CREATE_HOMEWORK = `
-  INSERT INTO homework (school_id, class_id, subject_id, teacher_id, title, description, due_date)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  INSERT INTO homework (school_id, school_academic_year_id, class_id, subject_id, teacher_id, title, description, due_date)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   RETURNING *
 `;
 export const UPDATE_HOMEWORK = `

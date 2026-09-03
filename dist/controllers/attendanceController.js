@@ -4,7 +4,8 @@ export async function getAttendance(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
-        const attendance = await attendanceService.getAttendance(schoolId);
+        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const attendance = await attendanceService.getAttendance(schoolId, academicYear);
         res.json(attendance);
     }
     catch (err) {

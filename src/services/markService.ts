@@ -1,8 +1,8 @@
 import { query } from "../db/index.js";
 import * as queries from "../queries/markQueries.js";
 
-export async function getMarks(schoolId: number | null, studentId: number | null, subjectId: number | null, classId: number | null) {
-  const result = await query(queries.GET_MARKS, [schoolId, studentId, subjectId, classId]);
+export async function getMarks(schoolId: number | null, studentId: number | null, subjectId: number | null, classId: number | null, academicYear?: string | null) {
+  const result = await query(queries.GET_MARKS, [schoolId, studentId, subjectId, classId, academicYear || null]);
   return result.rows;
 }
 

@@ -1,7 +1,7 @@
 import { query } from "../db/index.js";
 import * as queries from "../queries/feeQueries.js";
-export async function getFees(schoolId) {
-    const result = await query(queries.GET_FEES, [schoolId]);
+export async function getFees(schoolId, academicYear) {
+    const result = await query(queries.GET_FEES, [schoolId, academicYear || null]);
     return result.rows;
 }
 export async function getFeeById(feeId) {

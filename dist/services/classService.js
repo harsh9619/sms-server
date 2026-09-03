@@ -1,7 +1,7 @@
 import { query } from "../db/index.js";
 import * as queries from "../queries/classQueries.js";
-export async function getClasses(schoolId) {
-    const result = await query(queries.GET_CLASSES, [schoolId]);
+export async function getClasses(schoolId, academicYear) {
+    const result = await query(queries.GET_CLASSES, [schoolId, academicYear || null]);
     return result.rows;
 }
 export async function getClassById(classId) {
@@ -13,11 +13,12 @@ export async function getFullClassRecord(classId) {
     return result.rows[0] || null;
 }
 export async function createClass(schoolId, data) {
-    const { name, section, teacherId, subjects } = data;
+    const { name, section, teacherId, subjects, academicYear } = data;
     const dbTeacherId = teacherId ? teacherId : null;
+    const dbAcademicYear = academicYear || '2024-25';
     await query("BEGIN");
     try {
-        const classResult = await query(queries.CREATE_CLASS, [schoolId, name, section, dbTeacherId]);
+        const classResult = await query(queries.CREATE_CLASS, [schoolId, name, section, dbTeacherId, dbAcademicYear]);
         const newClass = classResult.rows[0];
         if (subjects && Array.isArray(subjects)) {
             for (const sub of subjects) {
@@ -36,11 +37,11 @@ export async function createClass(schoolId, data) {
     }
 }
 export async function updateClass(classId, schoolId, data) {
-    const { name, section, teacherId, subjects } = data;
+    const { name, section, teacherId, subjects, academicYear } = data;
     const dbTeacherId = teacherId ? teacherId : null;
     await query("BEGIN");
     try {
-        await query(queries.UPDATE_CLASS, [name, section, dbTeacherId, classId]);
+        await query(queries.UPDATE_CLASS, [name, section, dbTeacherId, academicYear || null, classId]);
         if (subjects && Array.isArray(subjects)) {
             const cleanSubjects = subjects.map((s) => String(s).trim()).filter(Boolean);
             const existingSubjectsRes = await query(queries.GET_SUBJECTS_FOR_CLASS, [classId]);

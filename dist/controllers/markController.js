@@ -10,7 +10,8 @@ export async function getMarks(req, res) {
         const subjectId = subjectIdStr ? toIntID(String(subjectIdStr)) : null;
         const classIdStr = req.query.classId;
         const classId = classIdStr ? toIntID(String(classIdStr)) : null;
-        const marks = await markService.getMarks(schoolId, studentId, subjectId, classId);
+        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const marks = await markService.getMarks(schoolId, studentId, subjectId, classId, academicYear);
         res.json(marks);
     }
     catch (err) {

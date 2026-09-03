@@ -4,7 +4,8 @@ export async function getSalaries(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
-        const salaries = await salaryService.getSalaries(schoolId);
+        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const salaries = await salaryService.getSalaries(schoolId, academicYear);
         res.json(salaries);
     }
     catch (err) {

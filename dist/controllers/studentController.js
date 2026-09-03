@@ -4,7 +4,8 @@ export async function getStudents(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
-        const students = await studentService.getStudents(schoolId);
+        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const students = await studentService.getStudents(schoolId, academicYear);
         res.json(students);
     }
     catch (err) {

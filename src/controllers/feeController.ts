@@ -6,8 +6,9 @@ export async function getFees(req: Request, res: Response) {
   try {
     const schoolIdStr = req.params.schoolId;
     const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
+    const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
 
-    const fees = await feeService.getFees(schoolId);
+    const fees = await feeService.getFees(schoolId, academicYear);
     res.json(fees);
   } catch (err) {
     res.status(500).json({ error: String(err) });

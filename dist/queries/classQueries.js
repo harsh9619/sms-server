@@ -3,6 +3,11 @@ export const GET_CLASSES = `
     c.id::text,
     c.name,
     c.section,
+    ay.label AS "academicYear",
+    c.school_academic_year_id::text AS "schoolAcademicYearId",
+    c.class_master_id::text AS "classMasterId",
+    cm.name AS "classMasterName",
+    cm.grade_level AS "gradeLevel",
     c.teacher_id::text AS "teacherId",
     u.name AS "teacherName",
     (SELECT COUNT(*)::int FROM students s WHERE s.class_id = c.id) AS "studentCount",
@@ -12,8 +17,12 @@ export const GET_CLASSES = `
     ) AS subjects,
     c.school_id::text AS "schoolId"
   FROM classes c
+  LEFT JOIN school_academic_years say ON c.school_academic_year_id = say.id
+  LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
+  LEFT JOIN class_masters cm ON c.class_master_id = cm.id
   LEFT JOIN users u ON c.teacher_id = u.id
   WHERE ($1::int IS NULL OR c.school_id = $1::int)
+    AND ($2::text IS NULL OR ay.label = $2::text)
 `;
 export const GET_CLASS_BY_ID = `
   SELECT 
@@ -21,6 +30,8 @@ export const GET_CLASS_BY_ID = `
     c.name,
     c.section,
     c.school_id::text AS "schoolId",
+    c.school_academic_year_id::text AS "schoolAcademicYearId",
+    c.class_master_id::text AS "classMasterId",
     c.teacher_id::text AS "teacherId"
   FROM classes c
   WHERE c.id = $1
@@ -30,6 +41,11 @@ export const GET_FULL_CLASS_RECORD = `
     c.id::text,
     c.name,
     c.section,
+    ay.label AS "academicYear",
+    c.school_academic_year_id::text AS "schoolAcademicYearId",
+    c.class_master_id::text AS "classMasterId",
+    cm.name AS "classMasterName",
+    cm.grade_level AS "gradeLevel",
     c.teacher_id::text AS "teacherId",
     u.name AS "teacherName",
     (SELECT COUNT(*)::int FROM students s WHERE s.class_id = c.id) AS "studentCount",
@@ -39,26 +55,33 @@ export const GET_FULL_CLASS_RECORD = `
     ) AS subjects,
     c.school_id::text AS "schoolId"
   FROM classes c
+  LEFT JOIN school_academic_years say ON c.school_academic_year_id = say.id
+  LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
+  LEFT JOIN class_masters cm ON c.class_master_id = cm.id
   LEFT JOIN users u ON c.teacher_id = u.id
   WHERE c.id = $1
 `;
 export const CREATE_CLASS = `
-  INSERT INTO classes (school_id, name, section, teacher_id, academic_year)
-  VALUES ($1, $2, $3, $4, '2024-25')
+  INSERT INTO classes (school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
+  VALUES ($1, $2, $3, $4, $5, $6)
   RETURNING *
 `;
 export const CREATE_SUBJECT = `
-  INSERT INTO subjects (school_id, name, code, class_id, teacher_id)
-  VALUES ($1, $2, $3, $4, $5)
+  INSERT INTO subjects (school_id, subject_master_id, name, code, class_id, teacher_id)
+  VALUES ($1, $2, $3, $4, $5, $6)
 `;
 export const UPDATE_CLASS = `
   UPDATE classes 
-  SET name = $1, section = $2, teacher_id = $3
-  WHERE id = $4
+  SET name = $1, section = $2, teacher_id = $3, 
+      school_academic_year_id = COALESCE($4, school_academic_year_id), 
+      class_master_id = COALESCE($5, class_master_id)
+  WHERE id = $6
 `;
 export const GET_SUBJECTS_FOR_CLASS = `
-  SELECT id, name FROM subjects 
-  WHERE class_id = $1
+  SELECT s.id::text, s.name, s.code, s.subject_master_id::text AS "subjectMasterId", sm.name AS "masterSubjectName" 
+  FROM subjects s
+  LEFT JOIN subject_masters sm ON s.subject_master_id = sm.id
+  WHERE s.class_id = $1
 `;
 export const DELETE_SUBJECT = `
   DELETE FROM subjects WHERE id = $1
@@ -68,4 +91,9 @@ export const UPDATE_SUBJECTS_TEACHER = `
 `;
 export const DELETE_CLASS = `
   DELETE FROM classes WHERE id = $1
+`;
+export const GET_CLASS_MASTERS = `
+  SELECT id::text, name, grade_level AS "gradeLevel", description 
+  FROM class_masters 
+  ORDER BY grade_level ASC
 `;

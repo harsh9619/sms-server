@@ -1,8 +1,8 @@
 import { query } from "../db/index.js";
 import * as queries from "../queries/salaryQueries.js";
 
-export async function getSalaries(schoolId: number | null) {
-  const result = await query(queries.GET_SALARIES, [schoolId]);
+export async function getSalaries(schoolId: number | null, academicYear?: string | null) {
+  const result = await query(queries.GET_SALARIES, [schoolId, academicYear || null]);
   return result.rows;
 }
 

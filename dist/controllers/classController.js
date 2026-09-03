@@ -4,7 +4,8 @@ export async function getClasses(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
-        const classes = await classService.getClasses(schoolId);
+        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const classes = await classService.getClasses(schoolId, academicYear);
         res.json(classes);
     }
     catch (err) {
@@ -15,7 +16,7 @@ export async function createClass(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = toIntID(String(schoolIdStr));
-        const { name, section, teacherId, subjects } = req.body;
+        const { name, section, teacherId, subjects, academicYear } = req.body;
         if (!name || !section) {
             return res.status(400).json({ error: "Class name and section are required." });
         }
@@ -24,7 +25,8 @@ export async function createClass(req, res) {
             name,
             section,
             teacherId: dbTeacherId,
-            subjects
+            subjects,
+            academicYear: academicYear || null,
         });
         const fullRecord = await classService.getFullClassRecord(newClassId);
         res.status(201).json(fullRecord);
@@ -44,7 +46,7 @@ export async function updateClass(req, res) {
             return res.status(404).json({ error: "Class not found" });
         }
         const schoolId = toIntID(existing.schoolId);
-        const { name, section, teacherId, subjects } = req.body;
+        const { name, section, teacherId, subjects, academicYear } = req.body;
         if (!name || !section) {
             return res.status(400).json({ error: "Class name and section are required." });
         }
@@ -53,7 +55,8 @@ export async function updateClass(req, res) {
             name,
             section,
             teacherId: dbTeacherId,
-            subjects
+            subjects,
+            academicYear: academicYear || null,
         });
         const fullRecord = await classService.getFullClassRecord(classId);
         res.json(fullRecord);

@@ -34,8 +34,8 @@ export const GET_TIMETABLES = `
 `;
 
 export const CREATE_TIMETABLE = `
-  INSERT INTO timetables (school_id, class_id, subject_id, day_of_week, start_time, end_time, classroom)
-  VALUES ($1, $2, $3, $4, $5, $6, $7)
+  INSERT INTO timetables (school_id, school_academic_year_id, class_id, subject_id, day_of_week, start_time, end_time, classroom)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
   RETURNING *
 `;
 

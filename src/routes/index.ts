@@ -13,6 +13,7 @@ import homeworkRoutes from "./homeworkRoutes.js";
 import noticeRoutes from "./noticeRoutes.js";
 import markRoutes from "./markRoutes.js";
 import authRoutes from "./authRoutes.js";
+import academicYearRoutes from "./academicYearRoutes.js";
 
 const router = Router();
 
@@ -35,6 +36,7 @@ schoolScopedRouter.use("/timetables", timetableRoutes);
 schoolScopedRouter.use("/homework", homeworkRoutes);
 schoolScopedRouter.use("/notices", noticeRoutes);
 schoolScopedRouter.use("/marks", markRoutes);
+schoolScopedRouter.use("/academic-years", academicYearRoutes);
 
 // Mount the school-scoped router under '/api/:schoolId'
 router.use("/api/:schoolId", schoolScopedRouter);
