@@ -13,21 +13,21 @@ const connectionString = process.env.DATABASE_URL;
 
 export const pool = connectionString
   ? new pg.Pool({
-      connectionString,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    })
+    connectionString,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  })
   : new pg.Pool({
-      host: process.env.DB_HOST || "localhost",
-      port: Number(process.env.DB_PORT || 5432),
-      database: process.env.DB_NAME || "school_management",
-      user: process.env.DB_USER || "postgres",
-      password: process.env.DB_PASSWORD || "admin123",
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
-    });
+    host: process.env.DB_HOST || "localhost",
+    port: Number(process.env.DB_PORT || 5432),
+    database: process.env.DB_NAME || "school_management",
+    user: process.env.DB_USER || "postgres",
+    password: process.env.DB_PASSWORD || "admin123",
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+  });
 
 pool.on("error", (err) => {
   console.error("Unexpected error on idle PostgreSQL client", err);

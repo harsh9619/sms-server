@@ -5,5 +5,9 @@ const router = Router();
 
 router.get("/health", schoolController.getHealth);
 router.get("/api/schools", schoolController.getSchools);
+router.get("/api/schools/:id", schoolController.getSchoolById);
+router.post("/api/schools", schoolController.createSchool);
+router.put("/api/schools/:id", schoolController.updateSchool);
+router.delete("/api/schools/:id", schoolController.deleteSchool);
 
 export default router;

@@ -4,9 +4,8 @@ export const GET_USERS_BY_SCHOOL = `
     u.name,
     u.email,
     CASE 
-      WHEN u.role = 'super_admin' THEN 'admin'
-      WHEN u.role = 'school_admin' THEN 'admin'
-      ELSE u.role
+      WHEN u.role::text IN ('super_admin', 'school_admin') THEN 'admin'
+      ELSE u.role::text
     END AS role,
     u.phone,
     u.avatar_url AS avatar,

@@ -257,7 +257,7 @@ async function initializeDatabase() {
             s.email || null,
             s.theme || "default", // store theme under logo_url
             s.type || "CBSE School", // store type under board
-            "2024-25",
+            s.academicYear || "2024-25",
             true,
             "free",
             500,
@@ -748,21 +748,21 @@ async function initializeDatabase() {
           content: "The annual sports meet will be held on June 25th. All students are invited to participate in track and field events.",
           audience: "all",
           is_pinned: true,
-          schoolId: "school-1"
+          schoolId: "1"
         },
         {
           title: "Staff Meeting",
           content: "A mandatory staff meeting is scheduled for Monday at 3:30 PM in the conference hall to discuss terminal exams.",
           audience: "teacher",
           is_pinned: false,
-          schoolId: "school-1"
+          schoolId: "1"
         },
         {
           title: "Fee Clearance Notice",
           content: "All students are requested to clear their pending tuition fees for Term 1 before June 20th to avoid late fines.",
           audience: "student",
           is_pinned: true,
-          schoolId: "school-1"
+          schoolId: "1"
         }
       ];
 
@@ -807,7 +807,7 @@ async function initializeDatabase() {
     // --- Seed Timetables ---
     if (await isTableEmpty("timetables")) {
       console.log("⏳ Seeding timetable slots...");
-      const schoolId = toUUID("school-1");
+      const schoolId = toUUID("1");
       const sayId = await getSchoolAcadYearId(appQuery, schoolId, "2024-25");
       const classRes = await appQuery("SELECT id FROM classes WHERE school_id = $1 LIMIT 1", [schoolId]);
       const classId = classRes.rows[0]?.id;
@@ -845,7 +845,7 @@ async function initializeDatabase() {
     // --- Seed Homework ---
     if (await isTableEmpty("homework")) {
       console.log("⏳ Seeding homework assignments...");
-      const schoolId = toUUID("school-1");
+      const schoolId = toUUID("1");
       const sayId = await getSchoolAcadYearId(appQuery, schoolId, "2024-25");
       const classRes = await appQuery("SELECT id, teacher_id FROM classes WHERE school_id = $1 LIMIT 1", [schoolId]);
       const classId = classRes.rows[0]?.id;
