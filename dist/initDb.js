@@ -187,9 +187,9 @@ async function initializeDatabase() {
             console.log(`⏳ Seeding ${data.schools.length} schools...`);
             for (const s of data.schools) {
                 const slug = s.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                await appQuery(`INSERT INTO schools (id, name, slug, address, phone, email, logo_url, board, academic_year, is_active, subscription, max_students)
+                await appQuery(`INSERT INTO schools (id, name, slug, address, phone, email, logo_url, board, academic_year, is_active, subscription, max_students, theme, appearance_mode)
            OVERRIDING SYSTEM VALUE
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
            ON CONFLICT (id) DO NOTHING`, [
                     toUUID(s.id),
                     s.name,
@@ -197,12 +197,14 @@ async function initializeDatabase() {
                     s.address || null,
                     s.phone || null,
                     s.email || null,
-                    s.theme || "default", // store theme under logo_url
+                    null,
                     s.type || "CBSE School", // store type under board
                     s.academicYear || "2024-25",
                     true,
                     "free",
                     500,
+                    s.theme || "default",
+                    s.appearanceMode || "light",
                 ]);
             }
             console.log("✅ Schools seeded.");

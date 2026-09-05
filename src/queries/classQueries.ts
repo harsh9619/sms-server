@@ -22,7 +22,8 @@ export const GET_CLASSES = `
   LEFT JOIN class_masters cm ON c.class_master_id = cm.id
   LEFT JOIN users u ON c.teacher_id = u.id
   WHERE ($1::int IS NULL OR c.school_id = $1::int)
-    AND ($2::text IS NULL OR ay.label = $2::text)
+    AND ($2::int IS NULL OR c.school_academic_year_id = $2::int)
+  ORDER BY cm.grade_level ASC NULLS LAST, c.name ASC, c.section ASC
 `;
 
 export const GET_CLASS_BY_ID = `

@@ -7,7 +7,9 @@ export const GET_SCHOOLS = `
     s.phone, 
     s.email, 
     s.board AS type, 
-    s.logo_url AS theme,
+    s.logo_url AS "logoUrl",
+    s.theme,
+    s.appearance_mode AS "appearanceMode",
     s.is_active AS "isActive",
     s.subscription,
     s.max_students AS "maxStudents",
@@ -54,7 +56,9 @@ export const GET_SCHOOL_BY_ID = `
     s.phone, 
     s.email, 
     s.board AS type, 
-    s.logo_url AS theme,
+    s.logo_url AS "logoUrl",
+    s.theme,
+    s.appearance_mode AS "appearanceMode",
     s.is_active AS "isActive",
     s.subscription,
     s.max_students AS "maxStudents",
@@ -89,6 +93,37 @@ export const GET_SCHOOL_BY_ID = `
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE s.id = $1
   GROUP BY s.id
+`;
+export const CREATE_SCHOOL = `
+  INSERT INTO schools (name, slug, address, phone, email, board, logo_url, is_active, subscription, max_students, academic_year, theme, appearance_mode)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+  RETURNING id
+`;
+export const UPDATE_SCHOOL = `
+  UPDATE schools
+  SET name            = $1,
+      slug            = $2,
+      address         = $3,
+      phone           = $4,
+      email           = $5,
+      board           = $6,
+      logo_url        = $7,
+      is_active       = $8,
+      subscription    = $9,
+      max_students    = $10,
+      theme           = $11,
+      appearance_mode = $12,
+      updated_at      = now()
+  WHERE id = $13
+`;
+export const GET_MASTER_THEMES = `
+  SELECT id, name, label, color, sort_order
+  FROM master_themes
+  WHERE is_active = TRUE
+  ORDER BY sort_order ASC
+`;
+export const DELETE_SCHOOL = `
+  DELETE FROM schools WHERE id = $1
 `;
 export const GET_SCHOOL_ACADEMIC_YEARS = `
   SELECT 

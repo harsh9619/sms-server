@@ -1,5 +1,10 @@
 import { query } from "../db/index.js";
-import { GET_SUBJECTS } from "../queries/subjectQueries.js";
+import { 
+  GET_SUBJECTS, 
+  GET_SUBJECT_MASTERS, 
+  GET_SUBJECTS_WITH_TEACHER_DETAILS, 
+  UPDATE_SUBJECT_TEACHER 
+} from "../queries/subjectQueries.js";
 
 export async function getSubjects(schoolId: number | null, classId: number | null) {
   const result = await query(GET_SUBJECTS, [schoolId, classId]);

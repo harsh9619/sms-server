@@ -4,7 +4,7 @@ export async function getClasses(req, res) {
     try {
         const schoolIdStr = req.params.schoolId;
         const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : null;
-        const academicYear = req.query.academicYear ? String(req.query.academicYear) : null;
+        const academicYear = req.headers.academicyearid ? toIntID(String(req.headers.academicyearid)) : null;
         const classes = await classService.getClasses(schoolId, academicYear);
         res.json(classes);
     }
@@ -51,13 +51,16 @@ export async function updateClass(req, res) {
             return res.status(400).json({ error: "Class name and section are required." });
         }
         const dbTeacherId = teacherId ? toIntID(String(teacherId)) : null;
+        const headerSayId = req.headers.academicyearid;
         await classService.updateClass(classId, schoolId, {
             name,
             section,
             teacherId: dbTeacherId,
             subjects,
             academicYear: academicYear || null,
-        });
+            // classMasterId,
+            // schoolAcademicYearId,
+        }, headerSayId);
         const fullRecord = await classService.getFullClassRecord(classId);
         res.json(fullRecord);
     }
@@ -77,6 +80,31 @@ export async function deleteClass(req, res) {
         }
         await classService.deleteClass(classId);
         res.json(existing);
+    }
+    catch (err) {
+        res.status(500).json({ error: String(err) });
+    }
+}
+export async function getClassMasters(_req, res) {
+    try {
+        const masters = await classService.getClassMasters();
+        res.json(masters);
+    }
+    catch (err) {
+        res.status(500).json({ error: String(err) });
+    }
+}
+export async function createClassesBatch(req, res) {
+    try {
+        const schoolIdStr = req.params.schoolId;
+        const schoolId = toIntID(String(schoolIdStr || "1"));
+        const { classes } = req.body;
+        if (!Array.isArray(classes) || classes.length === 0) {
+            return res.status(400).json({ error: "An array of class items is required." });
+        }
+        const headerSayId = req.headers.academicyearid;
+        const created = await classService.createClassesBatch(schoolId, classes, headerSayId);
+        res.status(201).json(created);
     }
     catch (err) {
         res.status(500).json({ error: String(err) });
