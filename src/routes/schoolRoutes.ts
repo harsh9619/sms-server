@@ -4,6 +4,7 @@ import * as schoolController from "../controllers/schoolController.js";
 const router = Router();
 
 router.get("/health", schoolController.getHealth);
+router.get("/api/master-themes", schoolController.getMasterThemes);
 router.get("/api/schools", schoolController.getSchools);
 router.get("/api/schools/:id", schoolController.getSchoolById);
 router.post("/api/schools", schoolController.createSchool);

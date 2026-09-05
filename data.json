@@ -7,7 +7,8 @@
       "phone": "+91 98765 43201",
       "email": "contact@greenwood.edu",
       "type": "CBSE School",
-      "theme": "default"
+      "theme": "default",
+      "appearanceMode": "light"
     },
     {
       "id": "2",
@@ -16,7 +17,8 @@
       "phone": "+91 98765 43202",
       "email": "info@bloomingdale.edu",
       "type": "IB World School",
-      "theme": "emerald"
+      "theme": "emerald",
+      "appearanceMode": "dark"
     },
     {
       "id": "3",
@@ -25,7 +27,8 @@
       "phone": "+91 98765 43203",
       "email": "info@stxavier.edu",
       "type": "ICSE School",
-      "theme": "indigo",
+      "theme": "purple",
+      "appearanceMode": "light",
       "academicYear": "2023-24"
     }
   ],

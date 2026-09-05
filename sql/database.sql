@@ -72,6 +72,28 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- =======================
+-- TABLE: master_themes
+-- =======================
+
+CREATE TABLE IF NOT EXISTS master_themes (
+  id          SERIAL PRIMARY KEY,
+  name        TEXT NOT NULL UNIQUE,
+  label       TEXT NOT NULL,
+  color       TEXT NOT NULL,
+  is_active   BOOL NOT NULL DEFAULT TRUE,
+  sort_order  INT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+
+INSERT INTO master_themes (name, label, color, sort_order) VALUES
+  ('default', 'Ocean Blue',    '#3b82f6', 1),
+  ('emerald', 'Emerald',       '#10b981', 2),
+  ('purple',  'Royal Purple',  '#8b5cf6', 3),
+  ('rose',    'Rose',          '#f43f5e', 4),
+  ('amber',   'Sunset Amber',  '#f97316', 5)
+ON CONFLICT (name) DO NOTHING;
+
+-- =======================
 -- TABLE: schools
 -- =======================
 
@@ -88,6 +110,8 @@ CREATE TABLE IF NOT EXISTS schools (
   is_active        BOOLEAN           NOT NULL DEFAULT TRUE,
   subscription     subscription_plan NOT NULL DEFAULT 'free',
   max_students     INT               NOT NULL DEFAULT 500,
+  theme            TEXT              NOT NULL DEFAULT 'default' CHECK (theme IN ('default','emerald','purple','rose','amber')),
+  appearance_mode  TEXT              NOT NULL DEFAULT 'light' CHECK (appearance_mode IN ('light','dark')),
   created_at       TIMESTAMPTZ       NOT NULL DEFAULT now(),
   updated_at       TIMESTAMPTZ       NOT NULL DEFAULT now()
 );

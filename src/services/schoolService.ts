@@ -6,6 +6,7 @@ import {
   CREATE_SCHOOL,
   UPDATE_SCHOOL,
   DELETE_SCHOOL,
+  GET_MASTER_THEMES,
 } from "../queries/schoolQueries.js";
 
 export async function getSchools(schoolId?: number, search?: string) {
@@ -23,6 +24,11 @@ export async function getSchoolAcademicYears(schoolId: number) {
   return result.rows;
 }
 
+export async function getMasterThemes() {
+  const result = await query(GET_MASTER_THEMES, []);
+  return result.rows;
+}
+
 export async function createSchool(data: {
   name: string;
   slug: string;
@@ -35,6 +41,8 @@ export async function createSchool(data: {
   subscription?: string;
   maxStudents?: number;
   academicYear?: string;
+  theme?: string;
+  appearanceMode?: string;
 }) {
   const result = await query(CREATE_SCHOOL, [
     data.name,
@@ -48,6 +56,8 @@ export async function createSchool(data: {
     data.subscription || null,
     data.maxStudents || null,
     data.academicYear || null,
+    data.theme || "default",
+    data.appearanceMode || "light",
   ]);
   return result.rows[0].id as number;
 }
@@ -65,6 +75,8 @@ export async function updateSchool(
     isActive?: boolean;
     subscription?: string;
     maxStudents?: number;
+    theme?: string;
+    appearanceMode?: string;
   }
 ) {
   await query(UPDATE_SCHOOL, [
@@ -78,6 +90,8 @@ export async function updateSchool(
     data.isActive ?? true,
     data.subscription || null,
     data.maxStudents || null,
+    data.theme || "default",
+    data.appearanceMode || "light",
     id,
   ]);
 }

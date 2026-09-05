@@ -31,7 +31,7 @@ export async function getSchoolById(req: Request, res: Response) {
 
 export async function createSchool(req: Request, res: Response) {
   try {
-    const { name, slug, address, phone, email, board, logoUrl, isActive, subscription, maxStudents, academicYear } =
+    const { name, slug, address, phone, email, board, logoUrl, isActive, subscription, maxStudents, academicYear, theme, appearanceMode } =
       req.body;
 
     if (!name || !slug) {
@@ -50,6 +50,8 @@ export async function createSchool(req: Request, res: Response) {
       subscription,
       maxStudents,
       academicYear,
+      theme: theme || "default",
+      appearanceMode: appearanceMode || "light",
     });
 
     const school = await schoolService.getSchoolById(id);
@@ -62,6 +64,7 @@ export async function createSchool(req: Request, res: Response) {
   }
 }
 
+
 export async function updateSchool(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
@@ -70,7 +73,7 @@ export async function updateSchool(req: Request, res: Response) {
       return res.status(404).json({ error: "School not found" });
     }
 
-    const { name, slug, address, phone, email, board, logoUrl, isActive, subscription, maxStudents } = req.body;
+    const { name, slug, address, phone, email, board, logoUrl, isActive, subscription, maxStudents, theme, appearanceMode } = req.body;
 
     if (!name || !slug) {
       return res.status(400).json({ error: "Name and slug are required." });
@@ -87,6 +90,8 @@ export async function updateSchool(req: Request, res: Response) {
       isActive,
       subscription,
       maxStudents,
+      theme,
+      appearanceMode,
     });
 
     const updated = await schoolService.getSchoolById(id);
@@ -98,6 +103,16 @@ export async function updateSchool(req: Request, res: Response) {
     res.status(500).json({ error: String(err) });
   }
 }
+
+export async function getMasterThemes(_req: Request, res: Response) {
+  try {
+    const themes = await schoolService.getMasterThemes();
+    res.json(themes);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+}
+
 
 export async function deleteSchool(req: Request, res: Response) {
   try {
