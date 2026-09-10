@@ -102,7 +102,7 @@ export async function createClassesBatch(req, res) {
         if (!Array.isArray(classes) || classes.length === 0) {
             return res.status(400).json({ error: "An array of class items is required." });
         }
-        const headerSayId = req.headers.academicyearid;
+        const headerSayId = req.headers.academicyearid ? toIntID(String(req.headers.academicyearid)) : null;
         const created = await classService.createClassesBatch(schoolId, classes, headerSayId);
         res.status(201).json(created);
     }

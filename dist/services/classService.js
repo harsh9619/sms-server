@@ -19,7 +19,7 @@ export async function getClasses(schoolId, headerVal) {
     }
     const result = await query(queries.GET_CLASSES, [
         schoolId ?? null,
-        headerVal ?? null,
+        // headerVal ?? null,
         sayId ?? null,
     ]);
     return result.rows;

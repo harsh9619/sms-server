@@ -14,7 +14,17 @@ export async function getSubjectsWithTeachers(schoolId, classId) {
 }
 export async function updateSubjectTeacher(subjectId, teacherId) {
     const result = await query(UPDATE_SUBJECT_TEACHER, [teacherId, subjectId]);
-    return result.rows[0];
+    const updatedSubject = result.rows[0];
+    if (updatedSubject) {
+        const classId = updatedSubject.classId ? Number(updatedSubject.classId) : null;
+        await query("DELETE FROM subject_teachers WHERE subject_id = $1", [subjectId]);
+        if (teacherId && classId) {
+            await query(`INSERT INTO subject_teachers (subject_id, teacher_id, class_id)
+         VALUES ($1, $2, $3)
+         ON CONFLICT DO NOTHING`, [subjectId, teacherId, classId]);
+        }
+    }
+    return updatedSubject;
 }
 export async function syncClassSubjects(schoolId, classId, masterSubjectIds) {
     // 1. Get all subject_masters to look up names & codes

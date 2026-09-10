@@ -175,42 +175,112 @@ SELECT setval(pg_get_serial_sequence('public.classes', 'id'), MAX(id), TRUE) FRO
 INSERT INTO subjects (id, school_id, subject_master_id, name, code, class_id, teacher_id)
 OVERRIDING SYSTEM VALUE VALUES
   -- Class 5A subjects (Greenwood)
-  (1,  1, 4,  'Mathematics',          'MATH',    1, 10),
-  (2,  1, 1,  'English',              'ENG',     1, 10),
-  (3,  1, 5,  'Science',              'SCI',     1, 10),
-  (4,  1, 9,  'Social Studies',       'SST',     1, 10),
+  (1,  1, 4,  'Mathematics',          'MATH5A',  1, 10),
+  (2,  1, 1,  'English',              'ENG5A',   1, 12),
+  (3,  1, 5,  'Science',              'SCI5A',   1, 11),
+  (4,  1, 9,  'Social Studies',       'SST5A',   1, 13),
+  (24, 1, 2,  'Hindi',                'HIN5A',   1, NULL),
+  (25, 1, 16, 'Computer Science',     'CS5A',    1, NULL),
 
   -- Class 5B subjects (Greenwood)
   (5,  1, 4,  'Mathematics',          'MATH5B',  2, 11),
-  (6,  1, 1,  'English',              'ENG5B',   2, 11),
-  (7,  1, 5,  'Science',              'SCI5B',   2, 11),
+  (6,  1, 1,  'English',              'ENG5B',   2, 12),
+  (7,  1, 5,  'Science',              'SCI5B',   2, 10),
+  (26, 1, 19, 'Art & Craft',          'ART5B',   2, NULL),
 
   -- Class 8A subjects (Greenwood)
-  (8,  1, 4,  'Mathematics',          'MATH8A',  3, 12),
-  (9,  1, 6,  'Physics',              'PHY8A',   3, 12),
+  (8,  1, 4,  'Mathematics',          'MATH8A',  3, 10),
+  (9,  1, 6,  'Physics',              'PHY8A',   3, 11),
   (10, 1, 7,  'Chemistry',            'CHEM8A',  3, 12),
-  (11, 1, 8,  'Biology',              'BIO8A',   3, 12),
+  (11, 1, 8,  'Biology',              'BIO8A',   3, 13),
   (12, 1, 21, 'English Literature',   'ENGLIT8', 3, 12),
+  (27, 1, 18, 'Physical Education',   'PE8A',    3, NULL),
 
   -- Class 10A subjects (Greenwood)
   (13, 1, 4,  'Mathematics',          'MATH10A', 4, 13),
-  (14, 1, 6,  'Physics',              'PHY10A',  4, 13),
-  (15, 1, 7,  'Chemistry',            'CHEM10A', 4, 13),
-  (16, 1, 16, 'Computer Science',     'CS10A',   4, 13),
-  (17, 1, 1,  'English',              'ENG10A',  4, 13),
+  (14, 1, 6,  'Physics',              'PHY10A',  4, 11),
+  (15, 1, 7,  'Chemistry',            'CHEM10A', 4, 12),
+  (16, 1, 16, 'Computer Science',     'CS10A',   4, 10),
+  (17, 1, 1,  'English',              'ENG10A',  4, 12),
+  (28, 1, 13, 'Economics',            'ECO10A',  4, NULL),
 
   -- Sunrise Class 6A
   (18, 2, 4,  'Mathematics',          'MATH6A',  5, 20),
-  (19, 2, 1,  'English',              'ENG6A',   5, 20),
-  (20, 2, 5,  'Science',              'SCI6A',   5, 20),
+  (19, 2, 1,  'English',              'ENG6A',   5, 21),
+  (20, 2, 5,  'Science',              'SCI6A',   5, NULL),
 
   -- Sunrise Class 9A
   (21, 2, 4,  'Mathematics',          'MATH9A',  6, 21),
-  (22, 2, 6,  'Physics',              'PHY9A',   6, 21),
-  (23, 2, 10, 'History',              'HIST9A',  6, 21)
+  (22, 2, 6,  'Physics',              'PHY9A',   6, 20),
+  (23, 2, 10, 'History',              'HIST9A',  6, NULL)
 ON CONFLICT (id) DO NOTHING;
 
 SELECT setval(pg_get_serial_sequence('public.subjects', 'id'), MAX(id), TRUE) FROM public.subjects;
+
+-- =======================
+-- SCHOOL CLASSES
+-- =======================
+
+INSERT INTO school_classes (id, school_id, school_academic_year_id, class_master_id, class_id, name, division)
+OVERRIDING SYSTEM VALUE VALUES
+  (1, 1, 1, 7,  1, '5',  'A'),
+  (2, 1, 1, 7,  2, '5',  'B'),
+  (3, 1, 1, 10, 3, '8',  'A'),
+  (4, 1, 1, 12, 4, '10', 'A'),
+  (5, 2, 3, 8,  5, '6',  'A'),
+  (6, 2, 3, 11, 6, '9',  'A')
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('public.school_classes', 'id'), MAX(id), TRUE) FROM public.school_classes;
+
+-- =======================
+-- CLASS SUBJECTS
+-- =======================
+
+INSERT INTO class_subjects (id, class_id, subject_id)
+OVERRIDING SYSTEM VALUE VALUES
+  (1,  1, 1),  (2,  1, 2),  (3,  1, 3),  (4,  1, 4),  (24, 1, 24), (25, 1, 25),
+  (5,  2, 5),  (6,  2, 6),  (7,  2, 7),  (26, 2, 26),
+  (8,  3, 8),  (9,  3, 9),  (10, 3, 10), (11, 3, 11), (12, 3, 12), (27, 3, 27),
+  (13, 4, 13), (14, 4, 14), (15, 4, 15), (16, 4, 16), (17, 4, 17), (28, 4, 28),
+  (18, 5, 18), (19, 5, 19), (20, 5, 20),
+  (21, 6, 21), (22, 6, 22), (23, 6, 23)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('public.class_subjects', 'id'), MAX(id), TRUE) FROM public.class_subjects;
+
+-- =======================
+-- CLASS TEACHERS
+-- =======================
+
+INSERT INTO class_teachers (id, class_id, teacher_id, is_primary)
+OVERRIDING SYSTEM VALUE VALUES
+  (1, 1, 10, TRUE),
+  (2, 2, 11, TRUE),
+  (3, 3, 12, TRUE),
+  (4, 4, 13, TRUE),
+  (5, 5, 20, TRUE),
+  (6, 6, 21, TRUE)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('public.class_teachers', 'id'), MAX(id), TRUE) FROM public.class_teachers;
+
+-- =======================
+-- SUBJECT TEACHERS
+-- (Only assigned subjects have records here; unassigned subjects have no subject_teachers record)
+-- =======================
+
+INSERT INTO subject_teachers (id, subject_id, teacher_id, class_id)
+OVERRIDING SYSTEM VALUE VALUES
+  (1,  1,  10, 1), (2,  2,  12, 1), (3,  3,  11, 1), (4,  4,  13, 1),
+  (5,  5,  11, 2), (6,  6,  12, 2), (7,  7,  10, 2),
+  (8,  8,  10, 3), (9,  9,  11, 3), (10, 10, 12, 3), (11, 11, 13, 3), (12, 12, 12, 3),
+  (13, 13, 13, 4), (14, 14, 11, 4), (15, 15, 12, 4), (16, 16, 10, 4), (17, 17, 12, 4),
+  (18, 18, 20, 5), (19, 19, 21, 5),
+  (20, 21, 21, 6), (21, 22, 20, 6)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT setval(pg_get_serial_sequence('public.subject_teachers', 'id'), MAX(id), TRUE) FROM public.subject_teachers;
 
 -- =======================
 -- STUDENTS
@@ -459,3 +529,6 @@ SELECT setval(pg_get_serial_sequence('public.notices',         'id'), COALESCE(M
 SELECT setval(pg_get_serial_sequence('public.salary_records',  'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.salary_records;
 SELECT setval(pg_get_serial_sequence('public.academic_years',  'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.academic_years;
 SELECT setval(pg_get_serial_sequence('public.class_subjects',  'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.class_subjects;
+SELECT setval(pg_get_serial_sequence('public.school_classes',  'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.school_classes;
+SELECT setval(pg_get_serial_sequence('public.class_teachers',   'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.class_teachers;
+SELECT setval(pg_get_serial_sequence('public.subject_teachers', 'id'), COALESCE(MAX(id), 1), MAX(id) IS NOT NULL) FROM public.subject_teachers;

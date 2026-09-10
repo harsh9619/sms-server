@@ -377,39 +377,71 @@ async function initializeDatabase() {
                 const cmLabel = isNaN(Number(c.name)) ? c.name : `Class ${c.name}`;
                 const cmRes = await appQuery(`SELECT id FROM class_masters WHERE name = $1 LIMIT 1`, [cmLabel]);
                 const classMasterId = cmRes.rows[0]?.id || null;
+                const classId = toUUID(c.id);
+                const teacherId = c.teacherId ? toUUID(c.teacherId) : null;
                 await appQuery(`INSERT INTO classes (id, school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
            OVERRIDING SYSTEM VALUE
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO NOTHING`, [
-                    toUUID(c.id),
+                    classId,
                     schoolId,
                     sayId,
                     classMasterId,
                     c.name,
                     c.section,
-                    c.teacherId ? toUUID(c.teacherId) : null,
+                    teacherId,
                 ]);
+                // Populate school_classes
+                await appQuery(`INSERT INTO school_classes (id, school_id, school_academic_year_id, class_master_id, class_id, name, division)
+           OVERRIDING SYSTEM VALUE
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (id) DO NOTHING`, [
+                    classId,
+                    schoolId,
+                    sayId,
+                    classMasterId,
+                    classId,
+                    c.name,
+                    c.section,
+                ]);
+                // Populate class_teachers
+                if (teacherId) {
+                    await appQuery(`INSERT INTO class_teachers (class_id, teacher_id, is_primary)
+             VALUES ($1, $2, TRUE)
+             ON CONFLICT DO NOTHING`, [classId, teacherId]);
+                }
                 if (c.subjects && Array.isArray(c.subjects)) {
                     for (const sub of c.subjects) {
                         // Look up subject_master_id by subject name
                         const smRes = await appQuery(`SELECT id FROM subject_masters WHERE name = $1 LIMIT 1`, [sub]);
                         const subjectMasterId = smRes.rows[0]?.id || null;
+                        const subjectId = toUUID(c.id + "_" + sub);
                         await appQuery(`INSERT INTO subjects (id, school_id, subject_master_id, name, code, class_id, teacher_id)
                OVERRIDING SYSTEM VALUE
                VALUES ($1, $2, $3, $4, $5, $6, $7)
                ON CONFLICT (id) DO NOTHING`, [
-                            toUUID(c.id + "_" + sub),
-                            toUUID(c.schoolId),
+                            subjectId,
+                            schoolId,
                             subjectMasterId,
                             sub,
                             sub.toUpperCase(),
-                            toUUID(c.id),
-                            c.teacherId ? toUUID(c.teacherId) : null,
+                            classId,
+                            teacherId,
                         ]);
+                        // Populate class_subjects
+                        await appQuery(`INSERT INTO class_subjects (class_id, subject_id)
+               VALUES ($1, $2)
+               ON CONFLICT DO NOTHING`, [classId, subjectId]);
+                        // Populate subject_teachers if teacher assigned
+                        if (teacherId) {
+                            await appQuery(`INSERT INTO subject_teachers (subject_id, teacher_id, class_id)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT DO NOTHING`, [subjectId, teacherId, classId]);
+                        }
                     }
                 }
             }
-            console.log("✅ Classes and subjects seeded.");
+            console.log("✅ Classes, subjects, and bridge tables seeded.");
         }
         // --- Migrate Students & Student User accounts ---
         if (data.students && (await isTableEmpty("students"))) {
