@@ -18,7 +18,7 @@ export const GET_FEES = `
   FROM fees f
   JOIN students s ON f.student_id = s.id
   JOIN users u ON s.user_id = u.id
-  LEFT JOIN classes c ON s.class_id = c.id
+  LEFT JOIN school_classes c ON s.class_id = c.id
   LEFT JOIN school_academic_years say ON f.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE ($1::int IS NULL OR f.school_id = $1::int)
@@ -49,7 +49,7 @@ export const GET_FULL_FEE_RECORD = `
   FROM fees f
   JOIN students s ON f.student_id = s.id
   JOIN users u ON s.user_id = u.id
-  LEFT JOIN classes c ON s.class_id = c.id
+  LEFT JOIN school_classes c ON s.class_id = c.id
   LEFT JOIN school_academic_years say ON f.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE f.id = $1

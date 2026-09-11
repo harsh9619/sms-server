@@ -1,5 +1,5 @@
 import { query } from "../db/index.js";
-import { GET_SUBJECTS, GET_SUBJECT_MASTERS, GET_SUBJECTS_WITH_TEACHER_DETAILS, UPDATE_SUBJECT_TEACHER } from "../queries/subjectQueries.js";
+import { GET_SUBJECTS, GET_SUBJECT_MASTERS, GET_SUBJECTS_WITH_TEACHER_DETAILS } from "../queries/subjectQueries.js";
 export async function getSubjects(schoolId, classId) {
     const result = await query(GET_SUBJECTS, [schoolId, classId]);
     return result.rows;
@@ -12,49 +12,33 @@ export async function getSubjectsWithTeachers(schoolId, classId) {
     const result = await query(GET_SUBJECTS_WITH_TEACHER_DETAILS, [schoolId, classId]);
     return result.rows;
 }
-export async function updateSubjectTeacher(subjectId, teacherId) {
-    const result = await query(UPDATE_SUBJECT_TEACHER, [teacherId, subjectId]);
-    const updatedSubject = result.rows[0];
-    if (updatedSubject) {
-        const classId = updatedSubject.classId ? Number(updatedSubject.classId) : null;
-        await query("DELETE FROM subject_teachers WHERE subject_id = $1", [subjectId]);
-        if (teacherId && classId) {
-            await query(`INSERT INTO subject_teachers (subject_id, teacher_id, class_id)
-         VALUES ($1, $2, $3)
-         ON CONFLICT DO NOTHING`, [subjectId, teacherId, classId]);
-        }
+export async function updateSubjectTeacher(schoolId, classId, subjectMasterId, teacherId, sayId) {
+    await query("DELETE FROM school_subject_teachers WHERE school_id = $1 AND class_id = $2 AND subject_id = $3", [schoolId, classId, subjectMasterId]);
+    if (teacherId) {
+        await query(`INSERT INTO school_subject_teachers (school_id, school_academic_year_id, subject_id, teacher_id, class_id)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT DO NOTHING`, [schoolId, sayId || null, subjectMasterId, teacherId, classId]);
     }
-    return updatedSubject;
 }
-export async function syncClassSubjects(schoolId, classId, masterSubjectIds) {
-    // 1. Get all subject_masters to look up names & codes
-    const mastersRes = await query("SELECT id, name, code FROM subject_masters WHERE id = ANY($1::int[])", [masterSubjectIds]);
-    const selectedMasters = mastersRes.rows;
-    // 2. Fetch existing subjects assigned to this class
-    const existingRes = await query("SELECT id, subject_master_id FROM subjects WHERE school_id = $1 AND class_id = $2", [schoolId, classId]);
-    const existingSubjects = existingRes.rows;
-    const existingMasterIds = new Set(existingSubjects.map(s => Number(s.subject_master_id)).filter(Boolean));
+export async function syncClassSubjects(schoolId, classId, masterSubjectIds, sayId) {
+    // 1. Fetch existing subject master IDs assigned to this class
+    const existingRes = await query("SELECT subject_id FROM school_class_subjects WHERE school_id = $1 AND class_id = $2", [schoolId, classId]);
+    const existingMasterIds = new Set(existingRes.rows.map(r => Number(r.subject_id)));
     const newMasterIds = new Set(masterSubjectIds);
-    // 3. Remove subjects no longer selected
-    for (const existing of existingSubjects) {
-        const masterId = Number(existing.subject_master_id);
-        if (masterId && !newMasterIds.has(masterId)) {
-            await query("DELETE FROM class_subjects WHERE class_id = $1 AND subject_id = $2", [classId, existing.id]);
-            await query("DELETE FROM subjects WHERE id = $1", [existing.id]);
+    // 2. Remove subjects no longer selected
+    for (const existingId of existingMasterIds) {
+        if (!newMasterIds.has(existingId)) {
+            await query("DELETE FROM school_class_subjects WHERE school_id = $1 AND class_id = $2 AND subject_id = $3", [schoolId, classId, existingId]);
+            await query("DELETE FROM school_subject_teachers WHERE school_id = $1 AND class_id = $2 AND subject_id = $3", [schoolId, classId, existingId]);
         }
     }
-    // 4. Insert newly selected subjects
-    for (const master of selectedMasters) {
-        if (!existingMasterIds.has(Number(master.id))) {
-            const insRes = await query(`INSERT INTO subjects (school_id, class_id, subject_master_id, name, code)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id`, [schoolId, classId, master.id, master.name, master.code]);
-            const newSubjectId = insRes.rows[0]?.id;
-            if (newSubjectId) {
-                await query("INSERT INTO class_subjects (class_id, subject_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [classId, newSubjectId]);
-            }
+    // 3. Insert newly selected subjects
+    for (const masterId of masterSubjectIds) {
+        if (!existingMasterIds.has(masterId)) {
+            await query(`INSERT INTO school_class_subjects (school_id, school_academic_year_id, class_id, subject_id)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT DO NOTHING`, [schoolId, sayId || null, classId, masterId]);
         }
     }
-    // Return updated list of subjects for this class
     return getSubjects(schoolId, classId);
 }

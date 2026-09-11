@@ -19,8 +19,8 @@ export const GET_MARKS = `
   FROM marks m
   JOIN students s ON m.student_id = s.id
   JOIN users u ON s.user_id = u.id
-  JOIN subjects sub ON m.subject_id = sub.id
-  LEFT JOIN classes c ON s.class_id = c.id
+  JOIN subject_masters sub ON m.subject_id = sub.id
+  LEFT JOIN school_classes c ON s.class_id = c.id
   LEFT JOIN school_academic_years say ON m.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE ($1::int IS NULL OR m.school_id = $1::int)

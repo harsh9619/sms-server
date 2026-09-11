@@ -5,7 +5,7 @@ export const GET_TEACHERS = `
     u.email,
     u.phone,
     COALESCE(
-      (SELECT string_agg(sub.name, ', ') FROM subjects sub WHERE sub.teacher_id = u.id),
+      (SELECT string_agg(sm.name, ', ') FROM school_subject_teachers sst JOIN subject_masters sm ON sst.subject_id = sm.id WHERE sst.teacher_id = u.id),
       'Mathematics'
     ) AS subject,
     'Science' AS department,

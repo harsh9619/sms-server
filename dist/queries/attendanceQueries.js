@@ -16,7 +16,7 @@ export const GET_ATTENDANCE = `
   FROM attendance a
   JOIN students s ON a.student_id = s.id
   JOIN users u ON s.user_id = u.id
-  LEFT JOIN classes c ON a.class_id = c.id
+  LEFT JOIN school_classes c ON a.class_id = c.id
   LEFT JOIN school_academic_years say ON a.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   LEFT JOIN users ub ON a.marked_by = ub.id

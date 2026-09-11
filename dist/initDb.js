@@ -68,7 +68,7 @@ async function ensureStudentExists(appQuery, studentId, name, rollNumber, classN
      ON CONFLICT (id) DO NOTHING`, [userUuid, toUUID(schoolId), name, `student_${studentId}@school.com`, "admin123", "student", true]);
     const schoolUuid = toUUID(schoolId);
     const sayId = await getSchoolAcadYearId(appQuery, schoolUuid, "2024-25");
-    const classRes = await appQuery("SELECT id FROM classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolUuid, className, sectionName]);
+    const classRes = await appQuery("SELECT id FROM school_classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolUuid, className, sectionName]);
     const classId = classRes.rows[0]?.id || null;
     await appQuery(`INSERT INTO students (id, school_id, school_academic_year_id, user_id, class_id, roll_no, gender, admission_date)
      OVERRIDING SYSTEM VALUE
@@ -367,7 +367,7 @@ async function initializeDatabase() {
             console.log("✅ subject_masters seeded.");
         }
         // --- Migrate Classes & Class Subjects ---
-        if (data.classes && (await isTableEmpty("classes"))) {
+        if (data.classes && (await isTableEmpty("school_classes"))) {
             console.log(`⏳ Seeding ${data.classes.length} classes and subjects...`);
             for (const c of data.classes) {
                 const schoolId = toUUID(c.schoolId);
@@ -379,7 +379,7 @@ async function initializeDatabase() {
                 const classMasterId = cmRes.rows[0]?.id || null;
                 const classId = toUUID(c.id);
                 const teacherId = c.teacherId ? toUUID(c.teacherId) : null;
-                await appQuery(`INSERT INTO classes (id, school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
+                await appQuery(`INSERT INTO school_classes (id, school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
            OVERRIDING SYSTEM VALUE
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO NOTHING`, [
@@ -391,57 +391,33 @@ async function initializeDatabase() {
                     c.section,
                     teacherId,
                 ]);
-                // Populate school_classes
-                await appQuery(`INSERT INTO school_classes (id, school_id, school_academic_year_id, class_master_id, class_id, name, division)
-           OVERRIDING SYSTEM VALUE
-           VALUES ($1, $2, $3, $4, $5, $6, $7)
-           ON CONFLICT (id) DO NOTHING`, [
-                    classId,
-                    schoolId,
-                    sayId,
-                    classMasterId,
-                    classId,
-                    c.name,
-                    c.section,
-                ]);
-                // Populate class_teachers
+                // Populate school_class_teachers
                 if (teacherId) {
-                    await appQuery(`INSERT INTO class_teachers (class_id, teacher_id, is_primary)
-             VALUES ($1, $2, TRUE)
-             ON CONFLICT DO NOTHING`, [classId, teacherId]);
+                    await appQuery(`INSERT INTO school_class_teachers (school_id, school_academic_year_id, class_id, teacher_id, is_primary)
+             VALUES ($1, $2, $3, $4, TRUE)
+             ON CONFLICT DO NOTHING`, [schoolId, sayId, classId, teacherId]);
                 }
                 if (c.subjects && Array.isArray(c.subjects)) {
                     for (const sub of c.subjects) {
                         // Look up subject_master_id by subject name
                         const smRes = await appQuery(`SELECT id FROM subject_masters WHERE name = $1 LIMIT 1`, [sub]);
                         const subjectMasterId = smRes.rows[0]?.id || null;
-                        const subjectId = toUUID(c.id + "_" + sub);
-                        await appQuery(`INSERT INTO subjects (id, school_id, subject_master_id, name, code, class_id, teacher_id)
-               OVERRIDING SYSTEM VALUE
-               VALUES ($1, $2, $3, $4, $5, $6, $7)
-               ON CONFLICT (id) DO NOTHING`, [
-                            subjectId,
-                            schoolId,
-                            subjectMasterId,
-                            sub,
-                            sub.toUpperCase(),
-                            classId,
-                            teacherId,
-                        ]);
-                        // Populate class_subjects
-                        await appQuery(`INSERT INTO class_subjects (class_id, subject_id)
-               VALUES ($1, $2)
-               ON CONFLICT DO NOTHING`, [classId, subjectId]);
-                        // Populate subject_teachers if teacher assigned
+                        if (!subjectMasterId)
+                            continue;
+                        // Populate school_class_subjects
+                        await appQuery(`INSERT INTO school_class_subjects (school_id, school_academic_year_id, class_id, subject_id)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT DO NOTHING`, [schoolId, sayId, classId, subjectMasterId]);
+                        // Populate school_subject_teachers if teacher assigned
                         if (teacherId) {
-                            await appQuery(`INSERT INTO subject_teachers (subject_id, teacher_id, class_id)
-                 VALUES ($1, $2, $3)
-                 ON CONFLICT DO NOTHING`, [subjectId, teacherId, classId]);
+                            await appQuery(`INSERT INTO school_subject_teachers (school_id, school_academic_year_id, subject_id, teacher_id, class_id)
+                 VALUES ($1, $2, $3, $4, $5)
+                 ON CONFLICT DO NOTHING`, [schoolId, sayId, subjectMasterId, teacherId, classId]);
                         }
                     }
                 }
             }
-            console.log("✅ Classes, subjects, and bridge tables seeded.");
+            console.log("✅ Classes, subject assignments, and teacher bridge tables seeded.");
         }
         // --- Migrate Students & Student User accounts ---
         if (data.students && (await isTableEmpty("students"))) {
@@ -462,7 +438,7 @@ async function initializeDatabase() {
                     await appQuery(`UPDATE users SET school_id = $1, phone = COALESCE(phone, $2) WHERE id = $3`, [schoolId, s.phone || null, userUuid]);
                 }
                 // Lookup matching class ID
-                const classRes = await appQuery("SELECT id FROM classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolId, s.class, s.section]);
+                const classRes = await appQuery("SELECT id FROM school_classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolId, s.class, s.section]);
                 const classId = classRes.rows[0]?.id || null;
                 // Clean gender
                 let gender = s.gender ? s.gender.toLowerCase() : null;
@@ -500,7 +476,7 @@ async function initializeDatabase() {
                 const schoolId = toUUID(a.schoolId);
                 const schoolLabel = data.schools?.find((s) => toUUID(s.id) === schoolId)?.academic_year || "2024-25";
                 const sayId = await getSchoolAcadYearId(appQuery, schoolId, schoolLabel);
-                const classRes = await appQuery("SELECT id FROM classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolId, a.class, a.section]);
+                const classRes = await appQuery("SELECT id FROM school_classes WHERE school_id = $1 AND name = $2 AND section = $3 LIMIT 1", [schoolId, a.class, a.section]);
                 const classId = classRes.rows[0]?.id || null;
                 let status = a.status ? a.status.toLowerCase() : "present";
                 if (status !== "present" && status !== "absent" && status !== "late" && status !== "excused") {
@@ -661,7 +637,7 @@ async function initializeDatabase() {
                 const schoolLabel = data.schools?.find((s) => toUUID(s.id) === schoolId)?.academic_year || "2024-25";
                 const sayId = await getSchoolAcadYearId(appQuery, schoolId, schoolLabel);
                 for (const [subjName, score] of Object.entries(er.marks)) {
-                    const subRes = await appQuery("SELECT id FROM subjects WHERE school_id = $1 AND name = $2 LIMIT 1", [schoolId, subjName]);
+                    const subRes = await appQuery("SELECT id FROM subject_masters WHERE LOWER(name) = LOWER($1) LIMIT 1", [subjName]);
                     const subjectId = subRes.rows[0]?.id;
                     if (subjectId) {
                         await appQuery(`INSERT INTO marks (school_id, school_academic_year_id, student_id, subject_id, exam_type, score, max_score, exam_date)
@@ -677,10 +653,10 @@ async function initializeDatabase() {
             console.log("⏳ Seeding timetable slots...");
             const schoolId = toUUID("1");
             const sayId = await getSchoolAcadYearId(appQuery, schoolId, "2024-25");
-            const classRes = await appQuery("SELECT id FROM classes WHERE school_id = $1 LIMIT 1", [schoolId]);
+            const classRes = await appQuery("SELECT id FROM school_classes WHERE school_id = $1 LIMIT 1", [schoolId]);
             const classId = classRes.rows[0]?.id;
             if (classId) {
-                const subRes = await appQuery("SELECT id, name FROM subjects WHERE school_id = $1 AND class_id = $2", [schoolId, classId]);
+                const subRes = await appQuery("SELECT sm.id, sm.name FROM school_class_subjects scs JOIN subject_masters sm ON scs.subject_id = sm.id WHERE scs.school_id = $1 AND scs.class_id = $2", [schoolId, classId]);
                 const subjects = subRes.rows;
                 if (subjects.length > 0) {
                     const days = ["monday", "tuesday", "wednesday", "thursday", "friday"];
@@ -708,11 +684,11 @@ async function initializeDatabase() {
             console.log("⏳ Seeding homework assignments...");
             const schoolId = toUUID("1");
             const sayId = await getSchoolAcadYearId(appQuery, schoolId, "2024-25");
-            const classRes = await appQuery("SELECT id, teacher_id FROM classes WHERE school_id = $1 LIMIT 1", [schoolId]);
+            const classRes = await appQuery("SELECT id, teacher_id FROM school_classes WHERE school_id = $1 LIMIT 1", [schoolId]);
             const classId = classRes.rows[0]?.id;
             const teacherId = classRes.rows[0]?.teacher_id;
             if (classId) {
-                const subRes = await appQuery("SELECT id FROM subjects WHERE school_id = $1 AND class_id = $2 LIMIT 2", [schoolId, classId]);
+                const subRes = await appQuery("SELECT sm.id FROM school_class_subjects scs JOIN subject_masters sm ON scs.subject_id = sm.id WHERE scs.school_id = $1 AND scs.class_id = $2 LIMIT 2", [schoolId, classId]);
                 const subjects = subRes.rows;
                 if (subjects.length > 0) {
                     await appQuery(`INSERT INTO homework (school_id, school_academic_year_id, class_id, subject_id, teacher_id, title, description, due_date)
@@ -768,8 +744,9 @@ async function initializeDatabase() {
         }
         console.log("⏳ Syncing identity sequences...");
         const tables = [
-            "schools", "users", "classes", "subjects", "students", "timetables",
-            "attendance", "class_subjects", "fees", "homework", "marks",
+            "schools", "users", "school_classes", "students", "timetables",
+            "attendance", "school_class_subjects", "school_class_teachers", "school_subject_teachers",
+            "fees", "homework", "marks",
             "salary_structures", "salary_records", "notices",
             "academic_years", "school_academic_years",
             "class_masters", "subject_masters"

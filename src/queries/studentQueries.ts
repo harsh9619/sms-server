@@ -20,7 +20,7 @@ export const GET_STUDENTS = `
     s.school_id::text AS "schoolId"
   FROM students s
   JOIN users u ON s.user_id = u.id
-  LEFT JOIN classes c ON s.class_id = c.id
+  LEFT JOIN school_classes c ON s.class_id = c.id
   LEFT JOIN school_academic_years say ON s.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE ($1::int IS NULL OR s.school_id = $1::int)
@@ -38,12 +38,12 @@ export const CHECK_EMAIL_EXISTS = `
 `;
 
 export const GET_CLASS = `
-  SELECT id FROM classes 
+  SELECT id FROM school_classes 
   WHERE school_id = $1 AND name = $2 AND section = $3
 `;
 
 export const CREATE_CLASS = `
-  INSERT INTO classes (school_id, school_academic_year_id, name, section)
+  INSERT INTO school_classes (school_id, school_academic_year_id, name, section)
   VALUES ($1, $2, $3, $4)
   RETURNING id
 `;
@@ -96,7 +96,7 @@ export const GET_STUDENT_BY_ID = `
     s.school_id::text AS "schoolId"
   FROM students s
   JOIN users u ON s.user_id = u.id
-  LEFT JOIN classes c ON s.class_id = c.id
+  LEFT JOIN school_classes c ON s.class_id = c.id
   LEFT JOIN school_academic_years say ON s.school_academic_year_id = say.id
   LEFT JOIN academic_years ay ON say.academic_year_id = ay.id
   WHERE s.id = $1

@@ -14,8 +14,8 @@ export const GET_HOMEWORK = `
     h.due_date::text AS "dueDate",
     h.created_at::text AS "createdAt"
   FROM homework h
-  JOIN classes c ON h.class_id = c.id
-  JOIN subjects sub ON h.subject_id = sub.id
+  JOIN school_classes c ON h.class_id = c.id
+  JOIN subject_masters sub ON h.subject_id = sub.id
   LEFT JOIN users u ON h.teacher_id = u.id
   WHERE ($1::int IS NULL OR h.school_id = $1::int)
     AND ($2::int IS NULL OR h.class_id = $2::int)

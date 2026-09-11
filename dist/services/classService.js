@@ -53,7 +53,15 @@ export async function createClass(schoolId, data, headerVal) {
                 const cleanSub = String(sub).trim();
                 if (!cleanSub)
                     continue;
-                await query(queries.CREATE_SUBJECT, [schoolId, cleanSub, cleanSub.toUpperCase(), newClass.id, dbTeacherId]);
+                const smRes = await query(`SELECT id FROM subject_masters WHERE LOWER(name) = LOWER($1) OR id::text = $1 LIMIT 1`, [cleanSub]);
+                const smId = smRes.rows[0]?.id;
+                if (smId) {
+                    await query(queries.CREATE_SUBJECT, [schoolId, finalSayId, newClass.id, smId]);
+                    if (dbTeacherId) {
+                        await query(`INSERT INTO school_subject_teachers (school_id, school_academic_year_id, subject_id, teacher_id, class_id)
+               VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`, [schoolId, finalSayId, smId, dbTeacherId, newClass.id]);
+                    }
+                }
             }
         }
         await query("COMMIT");
@@ -79,13 +87,20 @@ export async function updateClass(classId, schoolId, data, headerVal) {
             const existingNames = existingSubjects.map(s => s.name);
             const toDelete = existingSubjects.filter(s => !cleanSubjects.includes(s.name));
             for (const sub of toDelete) {
-                await query(queries.DELETE_SUBJECT, [sub.id]);
+                await query(queries.DELETE_SUBJECT, [classId, sub.id]);
             }
             const toAdd = cleanSubjects.filter(name => !existingNames.includes(name));
             for (const sub of toAdd) {
-                await query(queries.CREATE_SUBJECT, [schoolId, sub, sub.toUpperCase(), classId, dbTeacherId]);
+                const smRes = await query(`SELECT id FROM subject_masters WHERE LOWER(name) = LOWER($1) OR id::text = $1 LIMIT 1`, [sub]);
+                const smId = smRes.rows[0]?.id;
+                if (smId) {
+                    await query(queries.CREATE_SUBJECT, [schoolId, finalSayId, classId, smId]);
+                    if (dbTeacherId) {
+                        await query(`INSERT INTO school_subject_teachers (school_id, school_academic_year_id, subject_id, teacher_id, class_id)
+               VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`, [schoolId, finalSayId, smId, dbTeacherId, classId]);
+                    }
+                }
             }
-            await query(queries.UPDATE_SUBJECTS_TEACHER, [dbTeacherId, classId]);
         }
         await query("COMMIT");
     }
@@ -111,13 +126,13 @@ export async function createClassesBatch(schoolId, items, headerVal) {
             const dbTeacherId = teacherId ? toIntID(String(teacherId)) : null;
             const finalClassMasterId = await resolveClassMasterId(name, classMasterId ? toIntID(String(classMasterId)) : null);
             const existingRes = await query(`SELECT id::text, name, section, school_academic_year_id::text AS "schoolAcademicYearId", class_master_id::text AS "classMasterId"
-         FROM classes 
+         FROM school_classes 
          WHERE school_id = $1 AND name = $2 AND section = $3 AND ($4::int IS NULL OR school_academic_year_id = $4::int)`, [schoolId, name, section, finalSayId]);
             if (existingRes.rows.length > 0) {
                 createdClasses.push(existingRes.rows[0]);
                 continue;
             }
-            const classResult = await query(`INSERT INTO classes (school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
+            const classResult = await query(`INSERT INTO school_classes (school_id, school_academic_year_id, class_master_id, name, section, teacher_id)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id::text, name, section, school_academic_year_id::text AS "schoolAcademicYearId", class_master_id::text AS "classMasterId"`, [schoolId, finalSayId, finalClassMasterId, name, section, dbTeacherId]);
             if (classResult.rows.length > 0) {

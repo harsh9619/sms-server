@@ -52,12 +52,14 @@ export async function syncClassSubjects(req, res) {
 }
 export async function assignSubjectTeacher(req, res) {
     try {
-        const { subjectId, teacherId } = req.body;
-        if (!subjectId) {
-            return res.status(400).json({ error: "subjectId is required" });
+        const schoolIdStr = req.params.schoolId;
+        const schoolId = schoolIdStr ? toIntID(String(schoolIdStr)) : 1;
+        const { subjectId, classId, teacherId } = req.body;
+        if (!subjectId || !classId) {
+            return res.status(400).json({ error: "subjectId and classId are required" });
         }
-        const updated = await subjectService.updateSubjectTeacher(toIntID(String(subjectId)), teacherId ? toIntID(String(teacherId)) : null);
-        res.json(updated);
+        await subjectService.updateSubjectTeacher(schoolId, toIntID(String(classId)), toIntID(String(subjectId)), teacherId ? toIntID(String(teacherId)) : null);
+        res.json({ success: true });
     }
     catch (err) {
         res.status(500).json({ error: String(err) });

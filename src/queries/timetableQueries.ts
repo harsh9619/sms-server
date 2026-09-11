@@ -14,12 +14,13 @@ export const GET_TIMETABLES = `
     sub.teacher_id::text AS "teacherId",
     u.name AS "teacherName"
   FROM timetables t
-  JOIN classes c ON t.class_id = c.id
-  JOIN subjects sub ON t.subject_id = sub.id
-  LEFT JOIN users u ON sub.teacher_id = u.id
+  JOIN school_classes c ON t.class_id = c.id
+  JOIN subject_masters sub ON t.subject_id = sub.id
+  LEFT JOIN school_subject_teachers sst ON sst.subject_id = sub.id AND sst.class_id = t.class_id
+  LEFT JOIN users u ON COALESCE(t.teacher_id, sst.teacher_id) = u.id
   WHERE ($1::int IS NULL OR t.school_id = $1::int)
     AND ($2::int IS NULL OR t.class_id = $2::int)
-    AND ($3::int IS NULL OR sub.teacher_id = $3::int)
+    AND ($3::int IS NULL OR COALESCE(t.teacher_id, sst.teacher_id) = $3::int)
   ORDER BY 
     CASE t.day_of_week
       WHEN 'monday' THEN 1

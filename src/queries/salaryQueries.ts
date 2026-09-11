@@ -4,7 +4,7 @@ export const GET_SALARIES = `
     sr.teacher_id::text AS "teacherId",
     u.name AS "teacherName",
     COALESCE(
-      (SELECT string_agg(sub.name, ', ') FROM subjects sub WHERE sub.teacher_id = sr.teacher_id),
+      (SELECT string_agg(sm.name, ', ') FROM school_subject_teachers sst JOIN subject_masters sm ON sst.subject_id = sm.id WHERE sst.teacher_id = sr.teacher_id),
       'Mathematics'
     ) AS subject,
     sr.basic_salary::numeric::float AS "baseSalary",
@@ -37,7 +37,7 @@ export const GET_FULL_SALARY_RECORD = `
     sr.teacher_id::text AS "teacherId",
     u.name AS "teacherName",
     COALESCE(
-      (SELECT string_agg(sub.name, ', ') FROM subjects sub WHERE sub.teacher_id = sr.teacher_id),
+      (SELECT string_agg(sm.name, ', ') FROM school_subject_teachers sst JOIN subject_masters sm ON sst.subject_id = sm.id WHERE sst.teacher_id = sr.teacher_id),
       'Mathematics'
     ) AS subject,
     sr.basic_salary::numeric::float AS "baseSalary",
